@@ -3,6 +3,7 @@ package com.cardio_generator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +53,7 @@ public class HealthDataSimulator {
         List<Integer> patientIds = initializePatientIds(patientCount);
         Collections.shuffle(patientIds); // Randomize the order of patient IDs
 
-        scheduleTasksForPatients(patientIds);
+        scheduleTasksForPatients(patientIds,5);
     }
 
     /**
@@ -155,19 +156,27 @@ public class HealthDataSimulator {
      *
      * @param patientIds The list of patient IDs.
      */
-    private static void scheduleTasksForPatients(List<Integer> patientIds) {
+    private static void scheduleTasksForPatients(List<Integer> patientIds, int maxRuns) {
         ECGDataGenerator ecgDataGenerator = new ECGDataGenerator(patientCount);
         BloodSaturationDataGenerator bloodSaturationDataGenerator = new BloodSaturationDataGenerator(patientCount);
         BloodPressureDataGenerator bloodPressureDataGenerator = new BloodPressureDataGenerator(patientCount);
         BloodLevelsDataGenerator bloodLevelsDataGenerator = new BloodLevelsDataGenerator(patientCount);
         AlertGenerator alertGenerator = new AlertGenerator(patientCount);
 
+        AtomicInteger runs = new AtomicInteger(); // Counter to track the number of runs
+
         for (int patientId : patientIds) {
-            scheduleTask(() -> ecgDataGenerator.generate(patientId, outputStrategy), 1, TimeUnit.SECONDS);
-            scheduleTask(() -> bloodSaturationDataGenerator.generate(patientId, outputStrategy), 1, TimeUnit.SECONDS);
-            scheduleTask(() -> bloodPressureDataGenerator.generate(patientId, outputStrategy), 1, TimeUnit.MINUTES);
-            scheduleTask(() -> bloodLevelsDataGenerator.generate(patientId, outputStrategy), 2, TimeUnit.MINUTES);
-            scheduleTask(() -> alertGenerator.generate(patientId, outputStrategy), 20, TimeUnit.SECONDS);
+            scheduleTask(() -> {
+                ecgDataGenerator.generate(patientId, outputStrategy);
+                bloodSaturationDataGenerator.generate(patientId, outputStrategy);
+                bloodPressureDataGenerator.generate(patientId, outputStrategy);
+                bloodLevelsDataGenerator.generate(patientId, outputStrategy);
+                alertGenerator.generate(patientId, outputStrategy);
+                runs.getAndIncrement(); // Increment the runs counter
+                if (runs.get() >= maxRuns) {
+                    scheduler.shutdown(); // Shutdown the scheduler after reaching the maximum runs
+                }
+            }, 1, TimeUnit.SECONDS);
         }
     }
 
