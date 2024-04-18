@@ -1,11 +1,14 @@
 package com.cardio_generator.generators;
 
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.cardio_generator.outputs.OutputStrategy;
 
 public class AlertGenerator implements PatientDataGenerator {
 
+    private static final Logger logger = Logger.getLogger(AlertGenerator.class.getName());
     public static final Random RANDOM_GENERATOR = new Random();
     private final boolean[] alertStates; // false = resolved, true = pressed
 
@@ -34,8 +37,7 @@ public class AlertGenerator implements PatientDataGenerator {
                 }
             }
         } catch (Exception e) {
-            System.err.println("An error occurred while generating alert data for patient " + patientId);
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "An error occurred while generating alert data for patient " + patientId, e);
         }
     }
 }
