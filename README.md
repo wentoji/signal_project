@@ -67,3 +67,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Project Members
 - Student ID: 6356023
 - Student ID: 6346401
+
+## Andreas Binder for a period had no access to a computer, we have submitted and pushed edits both from my device which is why there will most likely be less submits from him
