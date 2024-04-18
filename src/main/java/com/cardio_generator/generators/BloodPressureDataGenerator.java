@@ -1,15 +1,27 @@
 package com.cardio_generator.generators;
 
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.cardio_generator.outputs.OutputStrategy;
 
+/**
+ * Generates simulated blood pressure data for patients.
+ * This class simulates the generation of blood pressure data, including systolic and diastolic pressures, for a specified number of patients.
+ */
 public class BloodPressureDataGenerator implements PatientDataGenerator {
-    private static final Random random = new Random();
 
+    private static final Random random = new Random();
     private int[] lastSystolicValues;
     private int[] lastDiastolicValues;
+    private static final Logger logger = Logger.getLogger(BloodPressureDataGenerator.class.getName());
 
+    /**
+     * Constructs a BloodPressureDataGenerator object with the specified number of patients.
+     *
+     * @param patientCount The number of patients for which blood pressure data will be generated.
+     */
     public BloodPressureDataGenerator(int patientCount) {
         lastSystolicValues = new int[patientCount + 1];
         lastDiastolicValues = new int[patientCount + 1];
@@ -21,6 +33,12 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
         }
     }
 
+    /**
+     * Generates blood pressure data for the specified patient and outputs it using the provided OutputStrategy.
+     *
+     * @param patientId      The ID of the patient for which blood pressure data is generated.
+     * @param outputStrategy The strategy used to output the blood pressure data.
+     */
     @Override
     public void generate(int patientId, OutputStrategy outputStrategy) {
         try {
@@ -39,8 +57,8 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
             outputStrategy.output(patientId, System.currentTimeMillis(), "DiastolicPressure",
                     Double.toString(newDiastolicValue));
         } catch (Exception e) {
-            System.err.println("An error occurred while generating blood pressure data for patient " + patientId);
-            e.printStackTrace(); // This will print the stack trace to help identify where the error occurred.
+            // Log any errors that occur during blood pressure data generation
+            logger.log(Level.SEVERE, "An error occurred while generating blood pressure data for patient " + patientId, e);
         }
     }
 }

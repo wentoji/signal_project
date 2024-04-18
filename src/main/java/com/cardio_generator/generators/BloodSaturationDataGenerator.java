@@ -1,13 +1,26 @@
 package com.cardio_generator.generators;
 
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.cardio_generator.outputs.OutputStrategy;
 
+/**
+ * Generates simulated blood saturation data for patients.
+ * This class simulates the generation of blood saturation data for a specified number of patients.
+ */
 public class BloodSaturationDataGenerator implements PatientDataGenerator {
+
     private static final Random random = new Random();
     private int[] lastSaturationValues;
+    private static final Logger logger = Logger.getLogger(BloodSaturationDataGenerator.class.getName());
 
+    /**
+     * Constructs a BloodSaturationDataGenerator object with the specified number of patients.
+     *
+     * @param patientCount The number of patients for which blood saturation data will be generated.
+     */
     public BloodSaturationDataGenerator(int patientCount) {
         lastSaturationValues = new int[patientCount + 1];
 
@@ -17,8 +30,15 @@ public class BloodSaturationDataGenerator implements PatientDataGenerator {
         }
     }
 
+    /**
+     * Generates blood saturation data for the specified patient and outputs it using the provided OutputStrategy.
+     *
+     * @param patientId      The ID of the patient for which blood saturation data is generated.
+     * @param outputStrategy The strategy used to output the blood saturation data.
+     * @throws IllegalArgumentException if the patientId is invalid.
+     */
     @Override
-    public void generate(int patientId, OutputStrategy outputStrategy) {
+    public void generate(int patientId, OutputStrategy outputStrategy) throws IllegalArgumentException {
         try {
             // Simulate blood saturation values
             int variation = random.nextInt(3) - 1; // -1, 0, or 1 to simulate small fluctuations
@@ -29,9 +49,13 @@ public class BloodSaturationDataGenerator implements PatientDataGenerator {
             lastSaturationValues[patientId] = newSaturationValue;
             outputStrategy.output(patientId, System.currentTimeMillis(), "Saturation",
                     Double.toString(newSaturationValue) + "%");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // Log and rethrow if the patientId is invalid
+            logger.log(Level.SEVERE, "Invalid patientId: " + patientId, e);
+            throw new IllegalArgumentException("Invalid patientId: " + patientId, e);
         } catch (Exception e) {
-            System.err.println("An error occurred while generating blood saturation data for patient " + patientId);
-            e.printStackTrace(); // This will print the stack trace to help identify where the error occurred.
+            // Log any other errors that occur during blood saturation data generation
+            logger.log(Level.SEVERE, "An error occurred while generating blood saturation data for patient " + patientId, e);
         }
     }
 }
