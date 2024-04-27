@@ -69,3 +69,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Student ID: 6346401
 
 ## Andreas Binder for a period had no access to a computer, we have submitted and pushed edits both from my device which is why there will most likely be less submits from him
+
+## Task week 2
+In the scr directory i have added a directory called uml_models in which i have added the PDF containing our work that we've done for the task of week 2.
+here's the link: [UML models](src/uml_models/UML%20models.pdf)
