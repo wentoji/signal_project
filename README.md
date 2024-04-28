@@ -73,3 +73,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Task week 2
 In the scr directory i have added a directory called uml_models in which i have added the PDF containing our work that we've done for the task of week 2.
 here's the link: [UML models](src/uml_models/UML%20models.pdf)
+The sequence and State diagrams are seperately stored here: [State and Sequence Diagrams](src/uml_models/State%20And%20Sequence%20Diagrams.pdf)
