@@ -54,4 +54,6 @@ public class Patient {
     public List<PatientRecord> getRecords(long startTime, long endTime) {
         // TODO Implement and test this method
     }
+
+    public int getId() { return patientId; }
 }
