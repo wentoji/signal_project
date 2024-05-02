@@ -1,4 +1,5 @@
 package com.data_management;
 
-public class DataParser {
+public class DataParser implements DataReader{
+    DEEZ NUTS;
 }
