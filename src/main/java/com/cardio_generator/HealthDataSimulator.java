@@ -17,6 +17,7 @@ import com.cardio_generator.outputs.FileOutputStrategy;
 import com.cardio_generator.outputs.OutputStrategy;
 import com.cardio_generator.outputs.TcpOutputStrategy;
 import com.cardio_generator.outputs.WebSocketOutputStrategy;
+import com.data_management.DataStorage;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +39,8 @@ public class HealthDataSimulator {
     private static ScheduledExecutorService scheduler;
     private static OutputStrategy outputStrategy = new ConsoleOutputStrategy(); // Default output strategy
     private static final Random random = new Random();
+
+    private DataStorage storage;
 
     /**
      * Main method to start the health data simulation.

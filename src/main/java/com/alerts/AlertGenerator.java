@@ -2,6 +2,11 @@ package com.alerts;
 
 import com.data_management.DataStorage;
 import com.data_management.Patient;
+import com.data_management.PatientRecord;
+
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The {@code AlertGenerator} class is responsible for monitoring patient data
@@ -10,6 +15,7 @@ import com.data_management.Patient;
  * it against specific health criteria.
  */
 public class AlertGenerator {
+    private static final Logger logger = Logger.getLogger(AlertGenerator.class.getName());
     private DataStorage dataStorage;
 
     /**
@@ -25,18 +31,41 @@ public class AlertGenerator {
     }
 
     /**
-     * Evaluates the specified patient's data to determine if any alert conditions
+     * Evaluates the patient data to determine if any alert conditions
      * are met. If a condition is met, an alert is triggered via the
-     * {@link #triggerAlert}
-     * method. This method should define the specific conditions under which an
-     * alert
-     * will be triggered.
-     *
-     * @param patient the patient data to evaluate for alert conditions
+     * {@link #triggerAlert} method. This method should define the specific conditions under which an
+     * alert will be triggered.
      */
-    public void evaluateData(Patient patient) {
-        // Implementation goes here
+    /**
+     * Evaluates the patient data to determine if any alert conditions
+     * are met. If a condition is met, an alert is triggered via the
+     * {@link #triggerAlert} method. This method should define the specific conditions under which an
+     * alert will be triggered.
+     */
+    public void evaluateData() {
+        try {
+            List<Patient> patients = dataStorage.getAllPatients();
+            for (Patient patient : patients) {
+                int patientId = patient.getId();
+                // Get records for the patient within a specific time range
+                long startTime = System.currentTimeMillis() - 24 * 60 * 60 * 1000; // 24 hours ago
+                long endTime = System.currentTimeMillis(); // Current time
+                List<PatientRecord> records = dataStorage.getRecords(patientId, startTime, endTime);
+
+                // Check if an alert needs to be triggered based on patient data
+                for (PatientRecord record : records) {
+                    if (checkAlertCondition(record)) {
+                        Alert alert = new Alert(String.valueOf(patientId), "Heart Rate Alert", record.getTimestamp());
+                        triggerAlert(alert);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log any errors that occur during alert evaluation
+            logger.log(Level.SEVERE, "An error occurred while evaluating patient data for alerts", e);
+        }
     }
+
 
     /**
      * Triggers an alert for the monitoring system. This method can be extended to
@@ -47,6 +76,17 @@ public class AlertGenerator {
      * @param alert the alert object containing details about the alert condition
      */
     private void triggerAlert(Alert alert) {
-        // Implementation might involve logging the alert or notifying staff
+        System.out.println("ALERT ALERT ALERT ALERT ALET ALEET ALRET ALETE ALET ALAET");
+    }
+
+    /**
+     * Checks if an alert needs to be triggered based on the patient record.
+     *
+     * @param record the patient record to evaluate
+     * @return true if an alert needs to be triggered, false otherwise
+     */
+    private boolean checkAlertCondition(PatientRecord record) {
+        // Example: If patient's heart rate exceeds a certain threshold, trigger an alert
+        return record.getMeasurementValue() > 100;
     }
 }
