@@ -1,74 +1,72 @@
 package com.Testing;
 
+import com.alerts.Alert;
 import com.alerts.AlertGenerator;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
 
-class AlertGeneratorTest {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class AlertGeneratorTest {
+
+    private DataStorage dataStorage;
+    private AlertGenerator alertGenerator;
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    private AlertGenerator alertGenerator;
-    private DataStorage dataStorage;
+    private final PrintStream originalOut = System.out;
 
-    @BeforeEach
-    void setUp() {
-        // Create a mock DataStorage for testing
+    @Before
+    public void setUp() {
         dataStorage = new DataStorage();
-
-        // Initialize the AlertGenerator with the mock DataStorage
         alertGenerator = new AlertGenerator(dataStorage);
-    }
-    @BeforeEach
-    void setUpStreams() {
-        // Redirect System.out to outContent
+
+        // Redirect System.out to the outContent stream
         System.setOut(new PrintStream(outContent));
-    }
-    @AfterEach
-    void cleanUpStreams() {
-        // Reset System.out
-        System.setOut(System.out);
     }
 
     @Test
-    void testEvaluateData_AlertTriggered() {
-        // Create a patient record that exceeds the threshold
-        int patientId = 1;
-        double measurementValue = 110;
-        String recordType = "HeartRate";
-        long timestamp = System.currentTimeMillis() - 10000; // 10 seconds ago
-        dataStorage.addPatientData(patientId, measurementValue, recordType, timestamp);
+    public void testEvaluateData_NoAlert() {
 
-        // Evaluate data
+        // Call the evaluateData method
         alertGenerator.evaluateData();
 
-        // Check if an alert is triggered
-        // Assuming the condition in AlertGenerator is to trigger an alert when heart rate exceeds 100
-        // Retrieve the patient's records and check if an alert is generated
-        List<PatientRecord> records = Arrays.asList(new PatientRecord(patientId, measurementValue, recordType, timestamp));
-        assertTrue(checkAlertGenerated(records)); // Implement checkAlertGenerated method to verify if alert is triggered
+        // Assert that no alerts are triggered
+        assertEquals("", outContent.toString().trim());
     }
 
-    private boolean checkAlertGenerated(List<PatientRecord> records) {
-        // Call evaluateData to potentially trigger the alert
+    @Test
+    public void testEvaluateData_BloodPressureAlert() {
+        dataStorage.addPatientData(1,200,"SystolicPressure",System.currentTimeMillis());
+        dataStorage.addPatientData(2,89,"SystolicPressure",System.currentTimeMillis());
+        dataStorage.addPatientData(2,91,"Saturation",System.currentTimeMillis());
+
+        // Call the evaluateData method
         alertGenerator.evaluateData();
 
-        // Get the console output as a string
-        String consoleOutput = outContent.toString();
+        // Assert that the blood pressure alert is triggered
+        assertTrue(outContent.toString().contains("Alert Triggered:"));
+        assertTrue(outContent.toString().contains("Patient ID: 1"));
+        assertTrue(outContent.toString().contains("Condition: SystolicPressure"));
+        assertTrue(outContent.toString().contains("Alert Triggered:"));
+        assertTrue(outContent.toString().contains("Patient ID: 2"));
+        assertTrue(outContent.toString().contains("Hypotensive Hypoxemia detected"));
+    }
 
-        // Check if the console output contains the expected alert message
-        return consoleOutput.contains("Alert Triggered:") &&
-                consoleOutput.contains("Patient ID: " + records.get(0).getPatientId()) &&
-                consoleOutput.contains("Condition: Heart Rate Alert") &&
-                consoleOutput.contains("Timestamp: " + records.get(0).getTimestamp());
+    // Add more test cases for other alert conditions
+
+    @After
+    public void restoreSystemOut() {
+        // Restore original System.out
+        System.setOut(originalOut);
     }
 }

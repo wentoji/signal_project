@@ -39,12 +39,6 @@ public class AlertGenerator {
      * {@link #triggerAlert} method. This method should define the specific conditions under which an
      * alert will be triggered.
      */
-    /**
-     * Evaluates the patient data to determine if any alert conditions
-     * are met. If a condition is met, an alert is triggered via the
-     * {@link #triggerAlert} method. This method should define the specific conditions under which an
-     * alert will be triggered.
-     */
     public void evaluateData() {
         try {
             List<Patient> patients = dataStorage.getAllPatients();
