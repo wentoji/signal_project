@@ -51,35 +51,48 @@ public class AlertGenerator {
             long currentTime = System.currentTimeMillis();
 
             for (Patient patient : patients) {
-                int patientId = patient.getId();
+                if (patient != null) {
+                    int patientId = patient.getId();
 
-                // Get records for the patient within the last minute
-                long startTime = currentTime - 60 * 1000; // 1 minute ago
-                long endTime = currentTime; // Current time
-                List<PatientRecord> records = dataStorage.getRecords(patientId, startTime, endTime);
+                    // Get records for the patient within the last minute
+                    long startTime = currentTime - 60 * 1000; // 1 minute ago
+                    long endTime = currentTime; // Current time
+                    List<PatientRecord> records = dataStorage.getRecords(patientId, startTime, endTime);
 
-                // Check if an alert needs to be triggered based on patient data
-                for (PatientRecord record : records) {
-                    if (checkAlertCondition(record)) {
-                        Alert alert = new Alert(String.valueOf(patientId), record.getRecordType(), record.getTimestamp());
-                        triggerAlert(alert);
+                    // Check if any records are available for the patient
+                    if (records != null && !records.isEmpty()) {
+                        for (PatientRecord record : records) {
+                            if (record != null) {
+                                // Check different alert conditions
+                                if (checkAlertCondition(record)) {
+                                    Alert alert = new Alert(String.valueOf(patientId), record.getRecordType(), record.getTimestamp());
+                                    triggerAlert(alert);
+                                }
+                                if (checkAlertConditionINCorDECTREND(record)) {
+                                    Alert alert = new Alert(String.valueOf(patientId), "Increasing or Decreasing trend in blood pressure found", record.getTimestamp());
+                                    triggerAlert(alert);
+                                }
+                                if (checkAlertConditionSaturationDROP(record)) {
+                                    Alert alert = new Alert(String.valueOf(patientId), "Rapid Saturation Drop detected", record.getTimestamp());
+                                    triggerAlert(alert);
+                                }
+                                if (checkAlertConditionHypotensiveHypoxemiaAlert(record)) {
+                                    Alert alert = new Alert(String.valueOf(patientId), "Hypotensive Hypoxemia detected", record.getTimestamp());
+                                    triggerAlert(alert);
+                                }
+                                if (checkAlertConditionIRREGULARHEARTBEAT(record)) {
+                                    Alert alert = new Alert(String.valueOf(patientId), "Irregular heart beat detected", record.getTimestamp());
+                                    triggerAlert(alert);
+                                }
+                            } else {
+                                logger.warning("Null record found for patient ID: " + patientId);
+                            }
+                        }
+                    } else {
+                        logger.warning("No records found for patient ID: " + patientId);
                     }
-                    if(checkAlertConditionINCorDECTREND(record)){
-                        Alert alert = new Alert(String.valueOf(patientId),"Increasing or Decreasing trend in blood pressure found", record.getTimestamp());
-                        triggerAlert(alert);
-                    }
-                    if(checkAlertConditionSaturationDROP(record)){
-                        Alert alert = new Alert(String.valueOf(patientId),"Rapid Saturation Drop detected", record.getTimestamp());
-                        triggerAlert(alert);
-                    }
-                    if(checkAlertConditionHypotensiveHypoxemiaAlert(record)){
-                        Alert alert = new Alert(String.valueOf(patientId),"Hypotensive Hypoxemia detected", record.getTimestamp());
-                        triggerAlert(alert);
-                    }
-                    if(checkAlertConditionIRREGULARHEARTBEAT(record)){
-                        Alert alert = new Alert(String.valueOf(patientId),"Irregular heart beat detected", record.getTimestamp());
-                        triggerAlert(alert);
-                    }
+                } else {
+                    logger.warning("Patient object is null.");
                 }
             }
         } catch (Exception e) {
@@ -87,6 +100,7 @@ public class AlertGenerator {
             logger.log(Level.SEVERE, "An error occurred while evaluating patient data for alerts", e);
         }
     }
+
 
 
     /**
