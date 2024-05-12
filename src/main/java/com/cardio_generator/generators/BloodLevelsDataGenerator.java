@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.cardio_generator.outputs.OutputStrategy;
+import com.data_management.DataStorage;
 
 /**
  * Generates simulated blood levels data for patients.
@@ -17,13 +18,17 @@ public class BloodLevelsDataGenerator implements PatientDataGenerator {
     private final double[] baselineWhiteCells;
     private final double[] baselineRedCells;
     private static final Logger logger = Logger.getLogger(BloodLevelsDataGenerator.class.getName());
+    private DataStorage dataStorage;
 
     /**
      * Constructs a BloodLevelsDataGenerator object with the specified number of patients.
      *
      * @param patientCount The number of patients for which blood levels data will be generated.
+     * @param dataStorage  The data storage to store the generated data.
      */
-    public BloodLevelsDataGenerator(int patientCount) {
+    public BloodLevelsDataGenerator(int patientCount, DataStorage dataStorage) {
+        this.dataStorage = dataStorage;
+
         // Initialize arrays to store baseline values for each patient
         baselineCholesterol = new double[patientCount + 1];
         baselineWhiteCells = new double[patientCount + 1];
@@ -38,7 +43,7 @@ public class BloodLevelsDataGenerator implements PatientDataGenerator {
     }
 
     /**
-     * Generates blood levels data for the specified patient and outputs it using the provided OutputStrategy.
+     * Generates blood levels data for the specified patient and stores it in the DataStorage.
      *
      * @param patientId      The ID of the patient for which blood levels data is generated.
      * @param outputStrategy The strategy used to output the blood levels data.
@@ -51,7 +56,12 @@ public class BloodLevelsDataGenerator implements PatientDataGenerator {
             double whiteCells = baselineWhiteCells[patientId] + (random.nextDouble() - 0.5) * 1; // Small variation
             double redCells = baselineRedCells[patientId] + (random.nextDouble() - 0.5) * 0.2; // Small variation
 
-            // Output the generated values
+            // Store the generated values in the DataStorage
+            dataStorage.addPatientData(patientId, cholesterol, "Cholesterol", System.currentTimeMillis());
+            dataStorage.addPatientData(patientId, whiteCells, "WhiteBloodCells", System.currentTimeMillis());
+            dataStorage.addPatientData(patientId, redCells, "RedBloodCells", System.currentTimeMillis());
+
+            // Output the generated values using the specified OutputStrategy
             outputStrategy.output(patientId, System.currentTimeMillis(), "Cholesterol", Double.toString(cholesterol));
             outputStrategy.output(patientId, System.currentTimeMillis(), "WhiteBloodCells", Double.toString(whiteCells));
             outputStrategy.output(patientId, System.currentTimeMillis(), "RedBloodCells", Double.toString(redCells));

@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.cardio_generator.outputs.OutputStrategy;
+import com.data_management.DataStorage;
 
 /**
  * Generates simulated ECG (Electrocardiogram) data for patients.
@@ -16,13 +17,17 @@ public class ECGDataGenerator implements PatientDataGenerator {
     private double[] lastEcgValues;
     private static final double PI = Math.PI;
     private static final Logger logger = Logger.getLogger(ECGDataGenerator.class.getName());
+    private DataStorage dataStorage;
 
     /**
      * Constructs an ECGDataGenerator object with the specified number of patients.
      *
      * @param patientCount The number of patients for which ECG data will be generated.
+     * @param dataStorage  The data storage to store the generated data.
      */
-    public ECGDataGenerator(int patientCount) {
+    public ECGDataGenerator(int patientCount, DataStorage dataStorage) {
+        this.dataStorage = dataStorage;
+
         lastEcgValues = new double[patientCount + 1];
         // Initialize the last ECG value for each patient
         for (int i = 1; i <= patientCount; i++) {
@@ -43,6 +48,9 @@ public class ECGDataGenerator implements PatientDataGenerator {
             double ecgValue = simulateEcgWaveform(patientId, lastEcgValues[patientId]);
             outputStrategy.output(patientId, System.currentTimeMillis(), "ECG", Double.toString(ecgValue));
             lastEcgValues[patientId] = ecgValue;
+
+            // Store the generated ECG value in the DataStorage
+            dataStorage.addPatientData(patientId, ecgValue, "ECG", System.currentTimeMillis());
         } catch (ArrayIndexOutOfBoundsException e) {
             // Log and rethrow if the patientId is invalid
             logger.log(Level.SEVERE, "Invalid patientId: " + patientId, e);
@@ -74,4 +82,3 @@ public class ECGDataGenerator implements PatientDataGenerator {
         return pWave + qrsComplex + tWave + random.nextDouble() * 0.05; // Add small noise
     }
 }
-

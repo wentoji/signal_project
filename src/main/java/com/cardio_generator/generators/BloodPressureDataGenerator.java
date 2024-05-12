@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.cardio_generator.outputs.OutputStrategy;
+import com.data_management.DataStorage;
 
 /**
  * Generates simulated blood pressure data for patients.
@@ -16,13 +17,17 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
     private int[] lastSystolicValues;
     private int[] lastDiastolicValues;
     private static final Logger logger = Logger.getLogger(BloodPressureDataGenerator.class.getName());
+    private DataStorage dataStorage;
 
     /**
      * Constructs a BloodPressureDataGenerator object with the specified number of patients.
      *
      * @param patientCount The number of patients for which blood pressure data will be generated.
+     * @param dataStorage  The data storage to store the generated data.
      */
-    public BloodPressureDataGenerator(int patientCount) {
+    public BloodPressureDataGenerator(int patientCount, DataStorage dataStorage) {
+        this.dataStorage = dataStorage;
+
         lastSystolicValues = new int[patientCount + 1];
         lastDiastolicValues = new int[patientCount + 1];
 
@@ -34,7 +39,7 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
     }
 
     /**
-     * Generates blood pressure data for the specified patient and outputs it using the provided OutputStrategy.
+     * Generates blood pressure data for the specified patient and stores it in the DataStorage.
      *
      * @param patientId      The ID of the patient for which blood pressure data is generated.
      * @param outputStrategy The strategy used to output the blood pressure data.
@@ -51,6 +56,10 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
             newDiastolicValue = Math.min(Math.max(newDiastolicValue, 60), 120);
             lastSystolicValues[patientId] = newSystolicValue;
             lastDiastolicValues[patientId] = newDiastolicValue;
+
+            // Store the generated values in the DataStorage
+            dataStorage.addPatientData(patientId, newSystolicValue, "SystolicPressure", System.currentTimeMillis());
+            dataStorage.addPatientData(patientId, newDiastolicValue, "DiastolicPressure", System.currentTimeMillis());
 
             outputStrategy.output(patientId, System.currentTimeMillis(), "SystolicPressure",
                     Double.toString(newSystolicValue));

@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.cardio_generator.outputs.OutputStrategy;
+import com.data_management.DataStorage;
 
 /**
  * Generates simulated blood saturation data for patients.
@@ -15,13 +16,17 @@ public class BloodSaturationDataGenerator implements PatientDataGenerator {
     private static final Random random = new Random();
     private int[] lastSaturationValues;
     private static final Logger logger = Logger.getLogger(BloodSaturationDataGenerator.class.getName());
+    private DataStorage dataStorage;
 
     /**
      * Constructs a BloodSaturationDataGenerator object with the specified number of patients.
      *
      * @param patientCount The number of patients for which blood saturation data will be generated.
+     * @param dataStorage  The data storage to store the generated data.
      */
-    public BloodSaturationDataGenerator(int patientCount) {
+    public BloodSaturationDataGenerator(int patientCount, DataStorage dataStorage) {
+        this.dataStorage = dataStorage;
+
         lastSaturationValues = new int[patientCount + 1];
 
         // Initialize with baseline saturation values for each patient
@@ -31,7 +36,7 @@ public class BloodSaturationDataGenerator implements PatientDataGenerator {
     }
 
     /**
-     * Generates blood saturation data for the specified patient and outputs it using the provided OutputStrategy.
+     * Generates blood saturation data for the specified patient and stores it in the DataStorage.
      *
      * @param patientId      The ID of the patient for which blood saturation data is generated.
      * @param outputStrategy The strategy used to output the blood saturation data.
@@ -47,6 +52,10 @@ public class BloodSaturationDataGenerator implements PatientDataGenerator {
             // Ensure the saturation stays within a realistic and healthy range
             newSaturationValue = Math.min(Math.max(newSaturationValue, 90), 100);
             lastSaturationValues[patientId] = newSaturationValue;
+
+            // Store the generated value in the DataStorage
+            dataStorage.addPatientData(patientId, newSaturationValue, "Saturation", System.currentTimeMillis());
+
             outputStrategy.output(patientId, System.currentTimeMillis(), "Saturation",
                     Double.toString(newSaturationValue) + "%");
         } catch (ArrayIndexOutOfBoundsException e) {

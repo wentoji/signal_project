@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.cardio_generator.generators.AlertGenerator;
+import com.alerts.AlertGenerator;
 import com.cardio_generator.generators.BloodLevelsDataGenerator;
 import com.cardio_generator.generators.BloodPressureDataGenerator;
 import com.cardio_generator.generators.BloodSaturationDataGenerator;
@@ -51,12 +51,18 @@ public class HealthDataSimulator {
     public static void main(String[] args) throws IOException {
         parseArguments(args);
 
+        HealthDataSimulator simulator = new HealthDataSimulator();
+        simulator.startSimulation();
+    }
+    public void startSimulation() {
+        storage = new DataStorage();
+
         scheduler = Executors.newScheduledThreadPool(patientCount * 4);
 
         List<Integer> patientIds = initializePatientIds(patientCount);
         Collections.shuffle(patientIds); // Randomize the order of patient IDs
 
-        scheduleTasksForPatients(patientIds,5);
+        scheduleTasksForPatients(patientIds, 5); // Adjust the number of runs as needed
     }
 
     /**
@@ -159,23 +165,34 @@ public class HealthDataSimulator {
      *
      * @param patientIds The list of patient IDs.
      */
-    private static void scheduleTasksForPatients(List<Integer> patientIds, int maxRuns) {
-        ECGDataGenerator ecgDataGenerator = new ECGDataGenerator(patientCount);
-        BloodSaturationDataGenerator bloodSaturationDataGenerator = new BloodSaturationDataGenerator(patientCount);
-        BloodPressureDataGenerator bloodPressureDataGenerator = new BloodPressureDataGenerator(patientCount);
-        BloodLevelsDataGenerator bloodLevelsDataGenerator = new BloodLevelsDataGenerator(patientCount);
-        AlertGenerator alertGenerator = new AlertGenerator(patientCount);
+    /**
+     * Schedules tasks for patients.
+     *
+     * @param patientIds The list of patient IDs.
+     * @param maxRuns    The maximum number of runs.
+     */
+    private void scheduleTasksForPatients(List<Integer> patientIds, int maxRuns) {
+        // Create instances of data generators and the alert generator
+        ECGDataGenerator ecgDataGenerator = new ECGDataGenerator(patientCount,storage);
+        BloodSaturationDataGenerator bloodSaturationDataGenerator = new BloodSaturationDataGenerator(patientCount,storage);
+        BloodPressureDataGenerator bloodPressureDataGenerator = new BloodPressureDataGenerator(patientCount,storage);
+        BloodLevelsDataGenerator bloodLevelsDataGenerator = new BloodLevelsDataGenerator(patientCount,storage);
+        AlertGenerator alertGenerator = new AlertGenerator(storage);
 
         AtomicInteger runs = new AtomicInteger(); // Counter to track the number of runs
 
         for (int patientId : patientIds) {
             scheduleTask(() -> {
+                // Generate data for each patient and store it in the data storage
                 ecgDataGenerator.generate(patientId, outputStrategy);
                 bloodSaturationDataGenerator.generate(patientId, outputStrategy);
                 bloodPressureDataGenerator.generate(patientId, outputStrategy);
                 bloodLevelsDataGenerator.generate(patientId, outputStrategy);
-                alertGenerator.generate(patientId, outputStrategy);
                 runs.getAndIncrement(); // Increment the runs counter
+
+                // Evaluate alerts after generating data for each patient
+                alertGenerator.evaluateData();
+
                 if (runs.get() >= maxRuns) {
                     scheduler.shutdown(); // Shutdown the scheduler after reaching the maximum runs
                 }
