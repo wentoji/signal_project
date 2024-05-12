@@ -4,35 +4,44 @@ import com.alerts.AlertGenerator;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.Assert.assertEquals;
+class AlertGeneratorTest {
 
-public class AlertGeneratorTest {
-
-    private DataStorage dataStorage;
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private AlertGenerator alertGenerator;
+    private DataStorage dataStorage;
 
-    @Before
-    public void setUp() {
-        dataStorage = new DataStorage(); // Create a new instance of DataStorage
-        alertGenerator = new AlertGenerator(dataStorage); // Initialize AlertGenerator with DataStorage
+    @BeforeEach
+    void setUp() {
+        // Create a mock DataStorage for testing
+        dataStorage = new DataStorage();
+
+        // Initialize the AlertGenerator with the mock DataStorage
+        alertGenerator = new AlertGenerator(dataStorage);
+    }
+    @BeforeEach
+    void setUpStreams() {
+        // Redirect System.out to outContent
+        System.setOut(new PrintStream(outContent));
+    }
+    @AfterEach
+    void cleanUpStreams() {
+        // Reset System.out
+        System.setOut(System.out);
     }
 
     @Test
-    public void testEvaluateData_NoPatients() {
-        // When there are no patients, evaluation should not trigger any alerts
-        alertGenerator.evaluateData();
-        // Add assertions here to verify that no alerts are triggered
-    }
-
-    @Test
-    public void testEvaluateData_AlertTriggered() {
-        // Create a patient and add a record that exceeds the threshold
+    void testEvaluateData_AlertTriggered() {
+        // Create a patient record that exceeds the threshold
         int patientId = 1;
         double measurementValue = 110;
         String recordType = "HeartRate";
@@ -42,10 +51,24 @@ public class AlertGeneratorTest {
         // Evaluate data
         alertGenerator.evaluateData();
 
-        // Assuming the condition in AlertGenerator is to trigger an alert when heart rate exceeds 100,
-        // we should expect an alert to be triggered for this patient
-        // Add assertions here to verify that an alert is triggered
+        // Check if an alert is triggered
+        // Assuming the condition in AlertGenerator is to trigger an alert when heart rate exceeds 100
+        // Retrieve the patient's records and check if an alert is generated
+        List<PatientRecord> records = Arrays.asList(new PatientRecord(patientId, measurementValue, recordType, timestamp));
+        assertTrue(checkAlertGenerated(records)); // Implement checkAlertGenerated method to verify if alert is triggered
     }
 
-    // Add more test cases for other scenarios if needed
+    private boolean checkAlertGenerated(List<PatientRecord> records) {
+        // Call evaluateData to potentially trigger the alert
+        alertGenerator.evaluateData();
+
+        // Get the console output as a string
+        String consoleOutput = outContent.toString();
+
+        // Check if the console output contains the expected alert message
+        return consoleOutput.contains("Alert Triggered:") &&
+                consoleOutput.contains("Patient ID: " + records.get(0).getPatientId()) &&
+                consoleOutput.contains("Condition: Heart Rate Alert") &&
+                consoleOutput.contains("Timestamp: " + records.get(0).getTimestamp());
+    }
 }
