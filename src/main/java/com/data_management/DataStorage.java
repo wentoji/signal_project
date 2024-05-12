@@ -108,13 +108,13 @@ public class DataStorage {
                     ", Data: " + record.getMeasurementValue() +
                     ", Timestamp: " + record.getTimestamp());
         }
-
-        // Initialize the AlertGenerator with the storage
-        AlertProcessor alertProcessor = new AlertProcessor(storage);
-
-        // Evaluate all patients' data to check for conditions that may trigger alerts
-        for (Patient patient : storage.getAllPatients()) {
-            alertProcessor.evaluateData();
-        }
+//
+//        // Initialize the AlertGenerator with the storage
+//        AlertProcessor alertProcessor = new AlertProcessor(storage);
+//
+//        // Evaluate all patients' data to check for conditions that may trigger alerts
+//        for (Patient patient : storage.getAllPatients()) {
+//            alertProcessor.evaluateData();
+//        }
     }
 }

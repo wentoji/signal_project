@@ -7,16 +7,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.alerts.AlertGenerator;
-import com.cardio_generator.generators.BloodLevelsDataGenerator;
-import com.cardio_generator.generators.BloodPressureDataGenerator;
-import com.cardio_generator.generators.BloodSaturationDataGenerator;
-import com.cardio_generator.generators.ECGDataGenerator;
+import com.alerts.AlertProcessor;
+import com.cardio_generator.generators.*;
 import com.cardio_generator.outputs.ConsoleOutputStrategy;
 import com.cardio_generator.outputs.FileOutputStrategy;
 import com.cardio_generator.outputs.OutputStrategy;
 import com.cardio_generator.outputs.TcpOutputStrategy;
 import com.cardio_generator.outputs.WebSocketOutputStrategy;
+import com.data_management.ActiveAlerts;
 import com.data_management.DataStorage;
 
 import java.util.Collections;
@@ -41,6 +39,7 @@ public class HealthDataSimulator {
     private static final Random random = new Random();
 
     private DataStorage storage;
+    private ActiveAlerts activeAlerts;
 
     /**
      * Main method to start the health data simulation.
@@ -60,6 +59,9 @@ public class HealthDataSimulator {
         scheduler = Executors.newScheduledThreadPool(patientCount * 4);
 
         List<Integer> patientIds = initializePatientIds(patientCount);
+
+        activeAlerts = new ActiveAlerts((ArrayList<Integer>) patientIds);
+
         Collections.shuffle(patientIds); // Randomize the order of patient IDs
 
         scheduleTasksForPatients(patientIds, 5); // Adjust the number of runs as needed
@@ -173,11 +175,13 @@ public class HealthDataSimulator {
      */
     private void scheduleTasksForPatients(List<Integer> patientIds, int maxRuns) {
         // Create instances of data generators and the alert generator
+
         ECGDataGenerator ecgDataGenerator = new ECGDataGenerator(patientCount,storage);
         BloodSaturationDataGenerator bloodSaturationDataGenerator = new BloodSaturationDataGenerator(patientCount,storage);
         BloodPressureDataGenerator bloodPressureDataGenerator = new BloodPressureDataGenerator(patientCount,storage);
         BloodLevelsDataGenerator bloodLevelsDataGenerator = new BloodLevelsDataGenerator(patientCount,storage);
-        AlertGenerator alertGenerator = new AlertGenerator(storage);
+        AlertGenerator alertGenerator = new AlertGenerator(storage, activeAlerts);
+        AlertProcessor alertProcessor = new AlertProcessor(storage, activeAlerts);
 
         AtomicInteger runs = new AtomicInteger(); // Counter to track the number of runs
 
@@ -188,10 +192,11 @@ public class HealthDataSimulator {
                 bloodSaturationDataGenerator.generate(patientId, outputStrategy);
                 bloodPressureDataGenerator.generate(patientId, outputStrategy);
                 bloodLevelsDataGenerator.generate(patientId, outputStrategy);
+                alertGenerator.generate(patientId, outputStrategy);
                 runs.getAndIncrement(); // Increment the runs counter
 
                 // Evaluate alerts after generating data for each patient
-                alertGenerator.evaluateData();
+                alertProcessor.evaluateData();
 
                 if (runs.get() >= maxRuns) {
                     scheduler.shutdown(); // Shutdown the scheduler after reaching the maximum runs

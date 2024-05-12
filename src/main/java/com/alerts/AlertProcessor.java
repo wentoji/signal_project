@@ -1,5 +1,6 @@
 package com.alerts;
 
+import com.data_management.ActiveAlerts;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
@@ -15,11 +16,12 @@ import java.util.logging.Logger;
  * relies on a {@link DataStorage} instance to access patient data and evaluate
  * it against specific health criteria.
  */
-public class AlertGenerator {
+public class AlertProcessor {
 
     private int IRREGULAR_BEAT_THRESHOLD = 5;
-    private static final Logger logger = Logger.getLogger(AlertGenerator.class.getName());
+    private static final Logger logger = Logger.getLogger(AlertProcessor.class.getName());
     private DataStorage dataStorage;
+    private ActiveAlerts activeAlerts;
 
     /**
      * Constructs an {@code AlertGenerator} with a specified {@code DataStorage}.
@@ -29,9 +31,13 @@ public class AlertGenerator {
      * @param dataStorage the data storage system that provides access to patient
      *                    data
      */
-    public AlertGenerator(DataStorage dataStorage) {
+    public AlertProcessor(DataStorage dataStorage, ActiveAlerts activeAlerts) {
         this.dataStorage = dataStorage;
+        this.activeAlerts = activeAlerts;
+
     }
+
+
 
     /**
      * Evaluates the patient data to determine if any alert conditions
@@ -41,6 +47,7 @@ public class AlertGenerator {
      */
     public void evaluateData() {
         try {
+
             List<Patient> patients = dataStorage.getAllPatients();
             long currentTime = System.currentTimeMillis();
 
@@ -52,6 +59,7 @@ public class AlertGenerator {
                     long startTime = currentTime - 60 * 1000; // 1 minute ago
                     long endTime = currentTime; // Current time
                     List<PatientRecord> records = dataStorage.getRecords(patientId, startTime, endTime);
+
 
                     // Check if any records are available for the patient
                     if (records != null && !records.isEmpty()) {
@@ -87,6 +95,18 @@ public class AlertGenerator {
                     }
                 } else {
                     logger.warning("Patient object is null.");
+                }
+            }
+            for (com.data_management.Alert alert: activeAlerts.getReadOnlyAlertStatus().values()) {
+                // System.out.println(alert.toString());
+                if (alert.getActive() && alert.getUpdated()) {
+                    // System.out.println("[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]");
+                    System.out.println("Manual Alert triggered: ");
+                    System.out.println("Timestamp: " + alert.getTimestamp());
+                    // sets the newly updated flag to false to prevent multiple trips
+                    activeAlerts.update(alert.getPatientId(), false, true, alert.getTimestamp());
+                } else {
+                    // System.out.println(alert.toString());
                 }
             }
         } catch (Exception e) {
@@ -142,11 +162,11 @@ public class AlertGenerator {
         }
 
 
-
         // No alert condition met by default
         return false;
 
         }
+
 
 
 
@@ -159,6 +179,8 @@ public class AlertGenerator {
 
         return false;
     }
+
+
     private boolean checkAlertConditionSaturationDROP(PatientRecord record) {
         if(checkRapidDropAlert(record.getPatientId(), System.currentTimeMillis())) {
             return true;
