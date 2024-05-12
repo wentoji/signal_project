@@ -11,9 +11,9 @@ public class DataParser {
             "Patient ID: (\\d*), Timestamp: (\\d*), Label: (\\w*), Data: (\\d*\\.\\d*)"
     );
 
-    public void readData(DataStorage storage) throws IOException {
+    public void readData(DataStorage storage, String inLabel) throws IOException {
         // File containing the data
-        File file = new File("label.txt");
+        File file = new File("output/" + inLabel + ".txt");
 
         try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextLine()) {

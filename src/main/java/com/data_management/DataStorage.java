@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.alerts.AlertGenerator;
+import com.alerts.AlertProcessor;
 
 /**
  * Manages storage and retrieval of patient data within a healthcare monitoring
@@ -59,10 +59,12 @@ public class DataStorage {
      *         range
      */
     public List<PatientRecord> getRecords(int patientId, long startTime, long endTime) {
-        Patient patient = patientMap.get(patientId);
-        if (patient != null) {
+
+        try {
+            Patient patient = patientMap.get(patientId);
             return patient.getRecords(startTime, endTime);
-        }
+        } catch (NullPointerException e) {}
+
         return new ArrayList<>(); // return an empty list if no patient is found
     }
 
@@ -72,8 +74,15 @@ public class DataStorage {
      * @return a list of all patients
      */
     public List<Patient> getAllPatients() {
-        return new ArrayList<>(patientMap.values());
+        ArrayList<Patient> outList = new ArrayList<Patient>();
+
+        for (Patient value : patientMap.values()) {
+            outList.add(value);
+        }
+        return outList;
     }
+
+
 
     /**
      * The main method for the DataStorage class.
@@ -101,11 +110,11 @@ public class DataStorage {
         }
 
         // Initialize the AlertGenerator with the storage
-        AlertGenerator alertGenerator = new AlertGenerator(storage);
+        AlertProcessor alertProcessor = new AlertProcessor(storage);
 
         // Evaluate all patients' data to check for conditions that may trigger alerts
         for (Patient patient : storage.getAllPatients()) {
-            alertGenerator.evaluateData();
+            alertProcessor.evaluateData();
         }
     }
 }
