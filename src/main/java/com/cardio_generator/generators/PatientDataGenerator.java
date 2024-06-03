@@ -12,6 +12,7 @@ public interface PatientDataGenerator {
      *
      * @param patientId      The ID of the patient for which data is generated.
      * @param outputStrategy The strategy used to output the generated data.
+     * @return
      */
-    void generate(int patientId, OutputStrategy outputStrategy);
+    String generate(int patientId, OutputStrategy outputStrategy);
 }

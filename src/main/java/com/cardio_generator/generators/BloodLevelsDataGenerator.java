@@ -47,9 +47,10 @@ public class BloodLevelsDataGenerator implements PatientDataGenerator {
      *
      * @param patientId      The ID of the patient for which blood levels data is generated.
      * @param outputStrategy The strategy used to output the blood levels data.
+     * @return
      */
     @Override
-    public void generate(int patientId, OutputStrategy outputStrategy) {
+    public String generate(int patientId, OutputStrategy outputStrategy) {
         try {
             // Generate values around the baseline for realism
             double cholesterol = baselineCholesterol[patientId] + (random.nextDouble() - 0.5) * 10; // Small variation
@@ -69,5 +70,6 @@ public class BloodLevelsDataGenerator implements PatientDataGenerator {
             // Log any errors that occur during blood levels data generation
             logger.log(Level.SEVERE, "An error occurred while generating blood levels data for patient " + patientId, e);
         }
+        return null;
     }
 }

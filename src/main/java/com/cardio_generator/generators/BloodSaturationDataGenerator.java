@@ -40,10 +40,11 @@ public class BloodSaturationDataGenerator implements PatientDataGenerator {
      *
      * @param patientId      The ID of the patient for which blood saturation data is generated.
      * @param outputStrategy The strategy used to output the blood saturation data.
+     * @return
      * @throws IllegalArgumentException if the patientId is invalid.
      */
     @Override
-    public void generate(int patientId, OutputStrategy outputStrategy) throws IllegalArgumentException {
+    public String generate(int patientId, OutputStrategy outputStrategy) throws IllegalArgumentException {
         try {
             // Simulate blood saturation values
             int variation = random.nextInt(3) - 1; // -1, 0, or 1 to simulate small fluctuations
@@ -66,5 +67,6 @@ public class BloodSaturationDataGenerator implements PatientDataGenerator {
             // Log any other errors that occur during blood saturation data generation
             logger.log(Level.SEVERE, "An error occurred while generating blood saturation data for patient " + patientId, e);
         }
+        return null;
     }
 }

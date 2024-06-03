@@ -35,9 +35,10 @@ public class AlertGenerator implements PatientDataGenerator {
      *
      * @param patientId      The ID of the patient for which the alert is generated.
      * @param outputStrategy The strategy used to output the alert data.
+     * @return
      */
     @Override
-    public void generate(int patientId, OutputStrategy outputStrategy) {
+    public String generate(int patientId, OutputStrategy outputStrategy) {
         try {
             // Check if the patient has an active alert
             if (activeAlerts.getAlert(patientId).getActive()) {
@@ -65,5 +66,6 @@ public class AlertGenerator implements PatientDataGenerator {
             // Log any errors that occur during alert generation
             logger.log(Level.SEVERE, "An error occurred while generating alert data for patient " + patientId, e);
         }
+        return null;
     }
 }

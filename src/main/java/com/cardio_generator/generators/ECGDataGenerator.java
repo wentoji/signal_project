@@ -40,10 +40,11 @@ public class ECGDataGenerator implements PatientDataGenerator {
      *
      * @param patientId      The ID of the patient for which ECG data is generated.
      * @param outputStrategy The strategy used to output the ECG data.
+     * @return
      * @throws IllegalArgumentException if the patientId is invalid.
      */
     @Override
-    public void generate(int patientId, OutputStrategy outputStrategy) throws IllegalArgumentException {
+    public String generate(int patientId, OutputStrategy outputStrategy) throws IllegalArgumentException {
         try {
             double ecgValue = simulateEcgWaveform(patientId, lastEcgValues[patientId]);
             outputStrategy.output(patientId, System.currentTimeMillis(), "ECG", Double.toString(ecgValue));
@@ -59,6 +60,7 @@ public class ECGDataGenerator implements PatientDataGenerator {
             // Log any other errors that occur during ECG data generation
             logger.log(Level.SEVERE, "An error occurred while generating ECG data for patient " + patientId, e);
         }
+        return null;
     }
 
     /**

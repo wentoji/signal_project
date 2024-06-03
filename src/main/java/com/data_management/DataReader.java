@@ -1,13 +1,21 @@
 package com.data_management;
 
-import java.io.IOException;
-
+/**
+ * Interface for reading data from a WebSocket.
+ */
 public interface DataReader {
+
     /**
-     * Reads data from a specified source and stores it in the data storage.
-     * 
-     * @param dataStorage the storage where data will be stored
-     * @throws IOException if there is an error reading the data
+     * Connects to the WebSocket server.
+     *
+     * @param websocketUrl the URL of the WebSocket server
      */
-    void readData(DataStorage dataStorage) throws IOException;
+    void connect(String websocketUrl);
+
+    /**
+     * Handles incoming messages from the WebSocket server.
+     *
+     * @param message the message received from the WebSocket server
+     */
+    void onMessage(String message);
 }

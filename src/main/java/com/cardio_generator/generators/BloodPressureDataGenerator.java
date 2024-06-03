@@ -43,9 +43,10 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
      *
      * @param patientId      The ID of the patient for which blood pressure data is generated.
      * @param outputStrategy The strategy used to output the blood pressure data.
+     * @return
      */
     @Override
-    public void generate(int patientId, OutputStrategy outputStrategy) {
+    public String generate(int patientId, OutputStrategy outputStrategy) {
         try {
             int systolicVariation = random.nextInt(5) - 2; // -2, -1, 0, 1, or 2
             int diastolicVariation = random.nextInt(5) - 2;
@@ -69,5 +70,6 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
             // Log any errors that occur during blood pressure data generation
             logger.log(Level.SEVERE, "An error occurred while generating blood pressure data for patient " + patientId, e);
         }
+        return null;
     }
 }
