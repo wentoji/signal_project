@@ -1,7 +1,6 @@
 package com.alerts;
 
-// Represents an alert
-public class Alert {
+public class Alert implements AlertComponent {
     private String patientId;
     private String condition;
     private long timestamp;
@@ -22,5 +21,13 @@ public class Alert {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    @Override
+    public void sendAlert() {
+        System.out.println("Alert Triggered:");
+        System.out.println("Patient ID: " + patientId);
+        System.out.println("Condition: " + condition);
+        System.out.println("Timestamp: " + timestamp);
     }
 }
